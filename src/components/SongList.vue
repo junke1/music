@@ -129,6 +129,7 @@
 </template>
 <script>
 import {
+  getCurrentInstance,
   computed,
   nextTick,
   watch,
@@ -178,6 +179,7 @@ export default {
     },
   },
   setup(props) {
+    const { proxy } = getCurrentInstance();
     const curSongRef = ref(null);
     const store = useStore();
     const info = reactive({
@@ -204,8 +206,24 @@ export default {
       scrollCurSong(curSongInfo);
     });
 
+    // 获取音频
+    const musicUrl = async (id, item) => {
+      const { data: res } = await proxy.$http.songUrl({
+        id: id,
+      });
+
+      if (res.code !== 200) {
+        return proxy.$msg.error('数据请求失败');
+      }
+
+      if (res.data[0].code !== 404) {
+        item.url = res.data[0].url;
+      }
+    };
+
     // 播放当前播放歌曲
-    const currentSong = (item) => {
+    const currentSong = async (item) => {
+      await musicUrl(String(item.id), item);
       // 若当前无歌曲或者 当前播放歌曲不是本歌单显示的歌曲，立即播放当前歌单
       if (!curSongInfo.value || item.id !== curSongInfo.value.id) {
         store.dispatch('selectPlay', { list: [item] });
@@ -245,7 +263,12 @@ export default {
         return [
           'list-item',
           props.stripe ? (index % 2 === 0 ? 'stripe' : '') : '',
-          isPlayed.value && item.id === curSongInfo.value.id ? 'active' : '',
+          isPlayed.value &&
+          item.id &&
+          curSongInfo.value &&
+          item.id === curSongInfo.value.id
+            ? 'active'
+            : '',
           item.license || item.vip ? 'disable' : '',
           item.vip ? 'vip' : '',
         ];
@@ -258,7 +281,10 @@ export default {
         return [
           'iconfont',
           'playicon',
-          isPlayed.value && item.id === curSongInfo.value.id
+          isPlayed.value &&
+          item.id &&
+          curSongInfo.value &&
+          item.id === curSongInfo.value.id
             ? 'icon-pause'
             : 'icon-play',
         ];
@@ -276,6 +302,10 @@ export default {
       if (playList.value.length > 1) {
         playList.value.splice(index, 1);
         store.commit('SET_PLAYLIST', playList.value);
+
+        if (playIndex.value >= playList.value.length) {
+          store.commit('SET_PLAYINDEX', playList.value.length - 1);
+        }
       } else {
         store.commit('SET_PLAYSTATUS', false);
         store.commit('SET_PLAYLIST', []);
