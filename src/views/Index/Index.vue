@@ -83,10 +83,10 @@
 
 <script>
 import { getCurrentInstance, onMounted, reactive, toRefs, ref } from 'vue';
-import Banners from '@views/index/Banner.vue';
-import RankList from '@views/index/RankList.vue';
-import DjList from '@views/index/DjList.vue';
-import ArtistList from '@views/index/ArtistList.vue';
+import Banners from '@views/Index/Banner.vue';
+import RankList from '@views/Index/RankList.vue';
+import DjList from '@views/Index/DjList.vue';
+import ArtistList from '@views/Index/ArtistList.vue';
 import PlayList from '@components/PlayList.vue';
 import AlbumList from '@components/AlbumList.vue';
 import MvList from '@components/MvList.vue';
